@@ -3105,10 +3105,11 @@ static inline uniform float tan(uniform float x_full) {
 }
 
 __declspec(safe)
-static inline float poly7(x, c0, c1, c2, c3, c4, c5, c6, c7) {
+static inline float poly7(float x, float c0, float c1, float c2,
+                          float c3, float c4, float c5, float c6, float c7) {
  float x2 = x*x;
  float x4 = x2*x2;
- float term01 = one + x /* * one */;
+ float term01 = c0 + x*c1;
  float term23 = c2 + x*c3;
  float term45 = c4 + x*c5;
  float term67 = c6 + x*c7;
@@ -3117,6 +3118,26 @@ static inline float poly7(x, c0, c1, c2, c3, c4, c5, c6, c7) {
  float term4567 = term45 + x2 * term67;
 
  return term0123 + x4 * term4567;
+}
+
+
+__declspec(safe)
+static inline uniform float poly7(uniform float x, uniform float c0,
+                                  uniform float c1, uniform float c2,
+                                  uniform float c3, uniform float c4,
+                                  uniform float c5, uniform float c6,
+                                  uniform float c7) {
+  uniform float x2 = x*x;
+  uniform float x4 = x2*x2;
+  uniform float term01 = c0 + x*c1;
+  uniform float term23 = c2 + x*c3;
+  uniform float term45 = c4 + x*c5;
+  uniform float term67 = c6 + x*c7;
+
+  uniform float term0123 = term01 + x2 * term23;
+  uniform float term4567 = term45 + x2 * term67;
+
+  return term0123 + x4 * term4567;
 }
 
 __declspec(safe)
@@ -3199,7 +3220,7 @@ static inline uniform float atan(uniform float x_full) {
         const uniform float atan_c12 = 2.417283318936824798583984375e-2;
         const uniform float atan_c14 = -4.6721356920897960662841796875e-3;
 
-        float result = poly7(x*x, atan_c0, atan_c2, atan_c4, atan_c6,
+        uniform float result = poly7(x*x, atan_c0, atan_c2, atan_c4, atan_c6,
                              atan_c8, atan_c10, atan_c12, atan_c14);
         result *= x;
 
