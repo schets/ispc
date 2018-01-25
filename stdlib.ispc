@@ -3104,6 +3104,20 @@ static inline uniform float tan(uniform float x_full) {
     }
 }
 
+__declspec(safe)
+static inline float poly7(x, c0, c1, c2, c3, c4, c5, c6, c7) {
+ float x2 = x*x;
+ float x4 = x2*x2;
+ float term01 = one + x /* * one */;
+ float term23 = c2 + x*c3;
+ float term45 = c4 + x*c5;
+ float term67 = c6 + x*c7;
+
+ float term0123 = term01 + x2 * term23;
+ float term4567 = term45 + x2 * term67;
+
+ return term0123 + x4 * term4567;
+}
 
 __declspec(safe)
 static inline float atan(float x_full) {
@@ -3143,14 +3157,8 @@ static inline float atan(float x_full) {
         const float atan_c12 = 2.417283318936824798583984375e-2;
         const float atan_c14 = -4.6721356920897960662841796875e-3;
 
-        float x2 = x * x;
-        float result = x2 * atan_c14 + atan_c12;
-        result = x2 * result + atan_c10;
-        result = x2 * result + atan_c8;
-        result = x2 * result + atan_c6;
-        result = x2 * result + atan_c4;
-        result = x2 * result + atan_c2;
-        result = x2 * result + atan_c0;
+        float result = poly7(x*x, atan_c0, atan_c2, atan_c4, atan_c6,
+                             atan_c8, atan_c10, atan_c12, atan_c14);
         result *= x;
 
         result = x_gt_1 ? pi_over_two_vec - result : result;
@@ -3191,14 +3199,8 @@ static inline uniform float atan(uniform float x_full) {
         const uniform float atan_c12 = 2.417283318936824798583984375e-2;
         const uniform float atan_c14 = -4.6721356920897960662841796875e-3;
 
-        uniform float x2 = x * x;
-        uniform float result = x2 * atan_c14 + atan_c12;
-        result = x2 * result + atan_c10;
-        result = x2 * result + atan_c8;
-        result = x2 * result + atan_c6;
-        result = x2 * result + atan_c4;
-        result = x2 * result + atan_c2;
-        result = x2 * result + atan_c0;
+        float result = poly7(x*x, atan_c0, atan_c2, atan_c4, atan_c6,
+                             atan_c8, atan_c10, atan_c12, atan_c14);
         result *= x;
 
         result = x_gt_1 ? pi_over_two_vec - result : result;
@@ -3328,13 +3330,7 @@ static inline float exp(float x_full) {
         const float c6 = 1.304379315115511417388916015625e-3;
         const float c7 = 2.7555381529964506626129150390625e-4;
 
-        float result = x * c7 + c6;
-        result = x * result + c5;
-        result = x * result + c4;
-        result = x * result + c3;
-        result = x * result + c2;
-        result = x * result + one;
-        result = x * result + one;
+        float result = poly7(x, one, one, c2, c3, c4, c5, c6, c7);
 
         // Compute 2^k (should differ for float and double, but I'll avoid
         // it for now and just do floats)
