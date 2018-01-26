@@ -36,7 +36,7 @@ export void
 transcendental_ispc(uniform float vals[], uniform float result[], uniform int count) {
     foreach (i = 0 ... count) {
       float X = vals[i];
-      result[i] = log(exp(X)*exp(2*X)*sin(X)*atan(X));
+      result[i] = log(exp(X)*sin(X)*atan(X)) * tan(X);
     }
 }
 

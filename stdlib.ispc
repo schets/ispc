@@ -2374,6 +2374,77 @@ static inline uniform float frexp(uniform float x, uniform int * uniform pw2) {
     return floatbits(ix);
 }
 
+
+// polynomial functions that get solid ipc
+
+__declspec(safe)
+static inline float poly6(float x, float c0, float c1, float c2,
+                          float c3, float c4, float c5, float c6) {
+ float x2 = x*x;
+ float x4 = x2*x2;
+ float term01 = c0 + x*c1;
+ float term23 = c2 + x*c3;
+ float term45 = c4 + x*c5;
+
+ float term0123 = term01 + x2 * term23;
+ float term456 = term45 + x2 * c6;
+
+ return term0123 + x4 * term456;
+}
+
+__declspec(safe)
+static inline uniform float poly6(uniform float x, uniform float c0,
+                                  uniform float c1, uniform float c2,
+                                  uniform float c3, uniform float c4,
+                                  uniform float c5, uniform float c6) {
+  uniform float x2 = x*x;
+  uniform float x4 = x2*x2;
+  uniform float term01 = c0 + x*c1;
+  uniform float term23 = c2 + x*c3;
+  uniform float term45 = c4 + x*c5;
+
+  uniform float term0123 = term01 + x2 * term23;
+  uniform float term456 = term45 + x2 * c6;
+
+  return term0123 + x4 * term456;
+}
+
+__declspec(safe)
+static inline float poly7(float x, float c0, float c1, float c2,
+                          float c3, float c4, float c5, float c6, float c7) {
+ float x2 = x*x;
+ float x4 = x2*x2;
+ float term01 = c0 + x*c1;
+ float term23 = c2 + x*c3;
+ float term45 = c4 + x*c5;
+ float term67 = c6 + x*c7;
+
+ float term0123 = term01 + x2 * term23;
+ float term4567 = term45 + x2 * term67;
+
+ return term0123 + x4 * term4567;
+}
+
+__declspec(safe)
+static inline uniform float poly7(uniform float x, uniform float c0,
+                                  uniform float c1, uniform float c2,
+                                  uniform float c3, uniform float c4,
+                                  uniform float c5, uniform float c6,
+                                  uniform float c7) {
+  uniform float x2 = x*x;
+  uniform float x4 = x2*x2;
+  uniform float term01 = c0 + x*c1;
+  uniform float term23 = c2 + x*c3;
+  uniform float term45 = c4 + x*c5;
+  uniform float term67 = c6 + x*c7;
+
+  uniform float term0123 = term01 + x2 * term23;
+  uniform float term4567 = term45 + x2 * term67;
+
+  return term0123 + x4 * term4567;
+}
+
+
 // Most of the transcendental implementations in ispc code here come from
 // Solomon Boulos's "syrah": https://github.com/boulos/syrah/
 
@@ -3004,22 +3075,14 @@ static inline float tan(float x_full) {
         float x2 = x * x;
         float z;
         cif (use_cotan) {
-            float cot_val = x2 * cot_c12 + cot_c10;
-            cot_val = x2 * cot_val + cot_c8;
-            cot_val = x2 * cot_val + cot_c6;
-            cot_val = x2 * cot_val + cot_c4;
-            cot_val = x2 * cot_val + cot_c2;
-            cot_val = x2 * cot_val + one_vec;
+            float cot_val = poly6(x2, one_vec, cot_c2, cot_c4,
+                                  cot_c6, cot_c8, cot_c10, cot_c12);
             // The equation is for x * cot(x) but we need -x * cot(x) for the tan part.
             cot_val /= -x;
             z = cot_val;
         } else {
-            float tan_val = x2 * tan_c12 + tan_c10;
-            tan_val = x2 * tan_val + tan_c8;
-            tan_val = x2 * tan_val + tan_c6;
-            tan_val = x2 * tan_val + tan_c4;
-            tan_val = x2 * tan_val + tan_c2;
-            tan_val = x2 * tan_val + one_vec;
+            float tan_val = poly6(x2, one_vec, tan_c2, tan_c4,
+                                  tan_c6, tan_c8, tan_c10, tan_c12);
             // Equation was for tan(x)/x
             tan_val *= x;
             z = tan_val;
@@ -3080,22 +3143,14 @@ static inline uniform float tan(uniform float x_full) {
         uniform float x2 = x * x;
         uniform float z;
         if (use_cotan) {
-            uniform float cot_val = x2 * cot_c12 + cot_c10;
-            cot_val = x2 * cot_val + cot_c8;
-            cot_val = x2 * cot_val + cot_c6;
-            cot_val = x2 * cot_val + cot_c4;
-            cot_val = x2 * cot_val + cot_c2;
-            cot_val = x2 * cot_val + one_vec;
+            uniform float cot_val = poly6(x2, one_vec, cot_c2, cot_c4,
+                                          cot_c6, cot_c8, cot_c10, cot_c12);
             // The equation is for x * cot(x) but we need -x * cot(x) for the tan part.
             cot_val /= -x;
             z = cot_val;
         } else {
-            uniform float tan_val = x2 * tan_c12 + tan_c10;
-            tan_val = x2 * tan_val + tan_c8;
-            tan_val = x2 * tan_val + tan_c6;
-            tan_val = x2 * tan_val + tan_c4;
-            tan_val = x2 * tan_val + tan_c2;
-            tan_val = x2 * tan_val + one_vec;
+            uniform float tan_val = poly6(x2, one_vec, tan_c2, tan_c4,
+                                          tan_c6, tan_c8, tan_c10, tan_c12);
             // Equation was for tan(x)/x
             tan_val *= x;
             z = tan_val;
@@ -3104,41 +3159,6 @@ static inline uniform float tan(uniform float x_full) {
     }
 }
 
-__declspec(safe)
-static inline float poly7(float x, float c0, float c1, float c2,
-                          float c3, float c4, float c5, float c6, float c7) {
- float x2 = x*x;
- float x4 = x2*x2;
- float term01 = c0 + x*c1;
- float term23 = c2 + x*c3;
- float term45 = c4 + x*c5;
- float term67 = c6 + x*c7;
-
- float term0123 = term01 + x2 * term23;
- float term4567 = term45 + x2 * term67;
-
- return term0123 + x4 * term4567;
-}
-
-
-__declspec(safe)
-static inline uniform float poly7(uniform float x, uniform float c0,
-                                  uniform float c1, uniform float c2,
-                                  uniform float c3, uniform float c4,
-                                  uniform float c5, uniform float c6,
-                                  uniform float c7) {
-  uniform float x2 = x*x;
-  uniform float x4 = x2*x2;
-  uniform float term01 = c0 + x*c1;
-  uniform float term23 = c2 + x*c3;
-  uniform float term45 = c4 + x*c5;
-  uniform float term67 = c6 + x*c7;
-
-  uniform float term0123 = term01 + x2 * term23;
-  uniform float term4567 = term45 + x2 * term67;
-
-  return term0123 + x4 * term4567;
-}
 
 __declspec(safe)
 static inline float atan(float x_full) {
@@ -3323,9 +3343,10 @@ static inline float exp(float x_full) {
         n = (int)z;
 
         z = x_full * x_full;
-        z = (((((1.9875691500E-4f  * x_full + 1.3981999507E-3f) * x_full +
-                8.3334519073E-3f) * x_full + 4.1665795894E-2f) * x_full +
-              1.6666665459E-1f) * x_full + 5.0000001201E-1f) * z + x_full + 1.f;
+        z = poly7(x_full, 1.f, 1.f, 5.0000001201E-1f, 1.6666665459E-1f,
+                  4.1665795894E-2f,  8.3334519073E-3f, 1.3981999507E-3f,
+                  1.9875691500E-4f);
+        z = z * x_full + 1.f;
         x_full = ldexp(z, n);
         return x_full;
     }
@@ -3420,13 +3441,7 @@ static inline uniform float exp(uniform float x_full) {
         const uniform float c6 = 1.304379315115511417388916015625e-3;
         const uniform float c7 = 2.7555381529964506626129150390625e-4;
 
-        uniform float result = x * c7 + c6;
-        result = x * result + c5;
-        result = x * result + c4;
-        result = x * result + c3;
-        result = x * result + c2;
-        result = x * result + one;
-        result = x * result + one;
+        uniform float result = poly7(x, one, one, c2, c3, c4, c5, c6, c7);
 
         // Compute 2^k (should differ for uniform float and double, but I'll avoid
         // it for now and just do uniform floats)

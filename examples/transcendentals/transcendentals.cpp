@@ -52,7 +52,7 @@ using namespace ispc;
 void transcendental_serial(float vals[], float result[], int count) {
   for (int i = 0; i < count; i++) {
     float val = vals[i];
-    result[i] = log(exp(val) * exp(2*val) * sin(val) * atan(val));
+    result[i] = log(exp(val) * sin(val) * atan(val)) * tan(val);
   }
 }
 
@@ -62,7 +62,7 @@ static void usage() {
 
 
 int main(int argc, char *argv[]) {
-    const int nRounds = 100;
+    const int nRounds = 500;
     int nElements = 1024*1024;
 
     for (int i = 1; i < argc; ++i) {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     // Transcendental ispc implementation
     //
     double bs_ispc = 1e30;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 6; ++i) {
         reset_and_start_timer();
         transcendental_ispc(vals, result, nElements);
         double dt = get_elapsed_mcycles();
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     // Transcendental serial implementation
     //
     double transcendental_serial_n = 1e30;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 6; ++i) {
         reset_and_start_timer();
         transcendental_serial(vals, result, nElements);
         double dt = get_elapsed_mcycles();
